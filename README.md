@@ -1,257 +1,432 @@
+# VaultPay
 
-# PayFlow
-
-> A full-stack payment wallet simulation demonstrating the engineering patterns behind apps like PhonePe, GPay, and Stripe — built for zero cost, deployable in one click, explainable in any interview.
-
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-payflow.vercel.app-6366f1?style=flat-square)](https://payflow.vercel.app)
-[![API Docs](https://img.shields.io/badge/API%20Docs-Swagger%20UI-85b7eb?style=flat-square)](https://payflow-api.railway.app/swagger-ui.html)
-[![Uptime](https://img.shields.io/uptimerobot/ratio/7/mXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX?style=flat-square&label=Uptime)](https://uptimerobot.com)
-[![CI](https://img.shields.io/github/actions/workflow/status/your-username/payflow/backend-ci.yml?style=flat-square&label=CI)](https://github.com/your-username/payflow/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-70%25-4ade80?style=flat-square)](./backend/target/site/jacoco/index.html)
-
-**📹 [Watch the 7-minute walkthrough on Loom →](https://loom.com/share/your-link-here)**
+> A full-stack digital payment wallet simulation demonstrating secure payment processing, wallet management, fraud detection, transaction tracking, and modern full-stack engineering practices.
 
 ---
 
-## What is PayFlow?
+## What is VaultPay?
 
-PayFlow is not a CRUD app. It is a payment processing simulation that implements the same architectural patterns used by real financial systems — double-entry bookkeeping, payment state machines, idempotency keys, fraud scoring, and the transactional outbox pattern — running entirely on free-tier infrastructure with a live demo anyone can open right now.
+VaultPay is a full-stack payment wallet simulation designed to demonstrate how modern digital payment platforms handle users, wallets, payments, transactions, fraud detection, authentication, and administrative operations.
 
-The goal is to demonstrate how money moves through a real system, not just that buttons can be clicked.
+Unlike a basic CRUD application, VaultPay implements several real-world backend engineering concepts including:
+
+* Secure JWT-based authentication
+* Digital wallet management
+* Payment processing
+* Double-entry ledger concepts
+* Payment state management
+* Idempotency handling
+* Fraud risk scoring
+* Transaction reconciliation
+* Audit logging
+* Rate limiting
+* Redis-based caching
+* WebSocket-based real-time updates
+* Transactional outbox processing
+
+The project combines a **Spring Boot backend** with a **React + TypeScript frontend** to provide a complete payment-wallet experience.
 
 ---
 
-## Demo Accounts
+## Key Features
 
-Open the [live app](https://payflow.vercel.app) and log in — no sign-up needed:
+### User Authentication
 
-| Role | Email | Password |
-|---|---|---|
-| User A | `demo-a@payflow.com` | `Demo@123` |
-| User B | `demo-b@payflow.com` | `Demo@123` |
-| Admin | `admin@payflow.com` | `Admin@123` |
+* User registration
+* User login
+* JWT-based authentication
+* Protected routes
+* Role-based authorization
+* Account security controls
 
-**Quick scenarios to try:**
-- Send ₹500 from User A to User B — watch the state machine update live via WebSocket
-- Send ₹6,000 — triggers fraud rejection with per-rule score breakdown
-- Send the same payment twice with the same `Idempotency-Key` header — second request returns cached response
-- Admin → freeze User B's wallet → try sending to them → `409 WALLET_FROZEN`
+### Digital Wallet
+
+* Wallet creation
+* Wallet balance management
+* Wallet status management
+* Wallet top-up simulation
+* UPI handle support
+* QR-based receiving functionality
+
+### Payments
+
+* Send money between wallets
+* Payment initiation
+* Payment status tracking
+* Payment state transitions
+* Idempotent payment requests
+* Real-time payment updates through WebSockets
+
+### Fraud Detection
+
+VaultPay includes a rule-based fraud scoring engine that evaluates transactions before processing.
+
+The system considers factors such as:
+
+* Transaction amount
+* Transaction frequency
+* Wallet age
+* Recipient history
+* Transaction timing
+
+The fraud engine generates a risk score that can be used to approve, review, or reject suspicious transactions.
+
+### Admin Dashboard
+
+Administrators can:
+
+* View users and wallets
+* Freeze and unfreeze wallets
+* Monitor fraud alerts
+* View audit logs
+* View settlement information
+* Monitor system health
+* Perform reconciliation checks
 
 ---
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────┐
-│              React 18 + TypeScript (Vercel)              │
-│         Tailwind · shadcn/ui · Zustand · Recharts        │
-└────────────────────┬──────────────────┬──────────────────┘
-                     │  REST API        │  WebSocket
-                     ▼                  ▼
-┌──────────────────────────────────────────────────────────┐
-│         Spring Boot 3.2 — Modular Monolith (Railway)     │
-│                                                          │
-│  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌─────────────┐  │
-│  │  auth/  │ │ wallet/ │ │ payment/ │ │   fraud/    │  │
-│  └─────────┘ └─────────┘ └──────────┘ └─────────────┘  │
-│  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌─────────────┐  │
-│  │ ledger/ │ │ outbox/ │ │settlement│ │notification/│  │
-│  └─────────┘ └─────────┘ └──────────┘ └─────────────┘  │
-│                   audit/ · ratelimit/ · common/          │
-└──────────┬──────────────────┬────────────────┬──────────┘
-           │                  │                │
-           ▼                  ▼                ▼
-    ┌─────────────┐   ┌──────────────┐  ┌──────────────┐
-    │    Neon     │   │   Upstash    │  │  Groq API    │
-    │ PostgreSQL  │   │    Redis     │  │  Resend API  │
-    └─────────────┘   └──────────────┘  └──────────────┘
+```text
+┌─────────────────────────────────────────────────────────────┐
+│              React + TypeScript Frontend                    │
+│        Vite · Tailwind CSS · Zustand · WebSocket            │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                       REST API / WebSocket
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Spring Boot Backend                         │
+│                     Modular Monolith                        │
+│                                                             │
+│   ┌─────────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐    │
+│   │  Auth   │  │ Wallet  │  │ Payment  │  │  Fraud   │    │
+│   └─────────┘  └─────────┘  └──────────┘  └──────────┘    │
+│                                                             │
+│   ┌─────────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐    │
+│   │ Ledger  │  │ Outbox  │  │Settlement│  │  Audit   │    │
+│   └─────────┘  └─────────┘  └──────────┘  └──────────┘    │
+│                                                             │
+│              Security · Rate Limiting · Common              │
+└───────────────┬──────────────────┬──────────────────────────┘
+                │                  │
+                ▼                  ▼
+        ┌──────────────┐    ┌──────────────┐
+        │  PostgreSQL  │    │    Redis     │
+        │   Database   │    │ Cache/State  │
+        └──────────────┘    └──────────────┘
 ```
 
-Each package inside the monolith maps 1:1 to a microservice boundary in production. Migrating to actual microservices would be a deployment change, not an architectural one — the interfaces are already service-shaped.
+The application follows a modular-monolith architecture where different business capabilities are separated into dedicated controllers, services, repositories, entities, and supporting components.
 
 ---
 
 ## Key Engineering Concepts
 
-### Double-Entry Ledger
+### 1. Payment State Machine
 
-Every financial event creates exactly two ledger entries that sum to zero. Enforced at the database layer by a PostgreSQL trigger — no application code can bypass it.
+Every payment follows a controlled lifecycle rather than jumping directly from creation to completion.
 
-```sql
--- Sending ₹500: two rows, always sums to zero
-INSERT INTO ledger_entries (wallet_id, entry_type, amount) VALUES
-  ('W-001', 'DEBIT',  -500.00),  -- sender
-  ('W-002', 'CREDIT', +500.00);  -- receiver
-
--- Immutability enforced by trigger
-CREATE TRIGGER ledger_immutability
-BEFORE UPDATE OR DELETE ON ledger_entries
-FOR EACH ROW EXECUTE FUNCTION prevent_ledger_modification();
+```text
+INITIATED
+    │
+    ▼
+FRAUD REVIEW
+    │
+    ├──────────────► REJECTED
+    │
+    ▼
+PROCESSING
+    │
+    ├──────────────► FAILED
+    │
+    ▼
+COMPLETED
 ```
 
-*Why it matters in an interview:* This is how every bank, wallet, and payment processor stores money. Not a balance column — a permanent, auditable ledger.
+The payment state transitions are handled by:
+
+```text
+PaymentStateMachine.java
+```
+
+This prevents invalid state transitions and provides predictable payment processing.
 
 ---
 
-### Payment State Machine
+### 2. Double-Entry Ledger
 
-Every payment moves through a strict, enforced lifecycle. No payment can skip states or move backwards.
+VaultPay uses ledger entries to maintain an auditable record of financial transactions.
 
+For example, when ₹500 is transferred:
+
+```text
+Sender Wallet       → DEBIT   ₹500
+Receiver Wallet     → CREDIT  ₹500
 ```
-INITIATED → FRAUD_REVIEW → PROCESSING → COMPLETED
-                        ↘              ↘ FAILED
-                         REJECTED
+
+The two entries balance each other:
+
+```text
+-₹500 + ₹500 = ₹0
 ```
 
-State transitions are validated in `PaymentStateMachine.java` and pushed to the React frontend in real time via WebSocket. Each transition is also written to the outbox table for downstream processing.
+This approach provides a more reliable financial transaction history than simply updating a wallet balance.
 
 ---
 
-### Idempotency Keys
+### 3. Idempotency
 
-Every payment request requires an `Idempotency-Key: <UUID>` header. The key is stored in Upstash Redis for 24 hours with the serialised response body.
+Payment APIs can receive duplicate requests because of network retries or client-side issues.
 
+VaultPay includes idempotency handling to prevent the same payment from being processed multiple times.
+
+```text
+Client
+  │
+  │ Payment + Idempotency Key
+  ▼
+Backend
+  │
+  ├── Key already exists?
+  │        │
+  │        └── YES → Return previous response
+  │
+  └── NO → Process payment
+             │
+             └── Store result
 ```
-Client sends payment → Redis: key exists? → Yes → return cached response (200, not 201)
-                                          → No  → process payment, store result in Redis
-```
 
-If a client retries due to a network timeout, they get the original response back — no duplicate charge, no duplicate ledger entry. This is exactly how Stripe handles retries.
+This helps prevent duplicate transactions.
 
 ---
 
-### Transactional Outbox Pattern
+### 4. Fraud Scoring
 
-Instead of Kafka, PayFlow uses PostgreSQL as a message bus. Payment state changes write an event to `outbox_events` atomically in the same database transaction. A `@Scheduled` poller processes pending events every 2 seconds.
+Before a payment is processed, VaultPay evaluates transaction risk using a rule-based fraud scoring engine.
 
-```
-Payment completes
-  └─→ DB transaction: UPDATE payments SET status = 'COMPLETED'
-                       INSERT INTO outbox_events (event_type, payload) VALUES ('PAYMENT_COMPLETED', ...)
-          ↓ (same transaction — atomic)
-  └─→ OutboxPoller picks up event
-          ├─→ Write ledger entries
-          ├─→ Send email receipt via Resend API
-          └─→ Push WebSocket status update to frontend
-```
+Example factors include:
 
-*Interview talking point:* In production, replace the poller with a Kafka consumer group. The event schema stays identical — it's a deployment change, not an architectural one.
+| Risk Factor          | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| Transaction Amount   | Large transfers can increase risk                     |
+| Transaction Velocity | Multiple transactions in a short period               |
+| Wallet Age           | Newly created wallets may receive additional scrutiny |
+| Recipient History    | First-time recipients can increase risk               |
+| Transaction Time     | Unusual transaction times can contribute to risk      |
 
----
-
-### Concurrent Transfer Safety
-
-Wallet balances use `SELECT ... FOR UPDATE` to prevent concurrent overdraft. If two threads try to drain the same wallet simultaneously, the second one waits for the first to commit, then reads the updated balance.
-
-```java
-// Prevents concurrent overdraft — one of the most important tests in the project
-@Test
-void concurrent_transfers_should_not_allow_overdraft() throws Exception {
-    // Wallet starts at ₹1,000
-    // 5 threads each try to send ₹800 simultaneously
-    // Exactly 1 succeeds, 4 fail with INSUFFICIENT_FUNDS
-    // Final balance: ₹200, never negative
-    // Ledger entries sum to zero
-}
-```
+The scoring engine produces a risk value that can be used by the payment processing pipeline.
 
 ---
 
-### Fraud Pre-Screening
+### 5. Transactional Outbox
 
-A rule-based scoring engine computes a risk score (0.0–1.0) before every payment is processed:
+VaultPay includes an outbox mechanism for handling events generated during payment processing.
 
-| Rule | Score | Rationale |
-|---|---|---|
-| > 5 transactions in 1 hour | +0.30 | Velocity anomaly |
-| Amount > ₹5,000 | +0.20 | Large single transfer |
-| Wallet age < 24 hours | +0.15 | New account risk |
-| First-time recipient | +0.10 | Unknown payee |
-| Night-time (11pm–5am IST) | +0.05 | Off-hours anomaly |
+```text
+Payment Processing
+       │
+       ▼
+Database Transaction
+       │
+       ├── Update Payment
+       │
+       └── Create Outbox Event
+                  │
+                  ▼
+             Outbox Poller
+                  │
+        ┌─────────┼─────────┐
+        ▼         ▼         ▼
+      Ledger    Email    WebSocket
+```
 
-- Score `< 0.4` → auto-approve
-- Score `0.4–0.69` → Groq AI generates a narrative explanation
-- Score `≥ 0.7` → hard reject
-
-The scoring architecture is identical to production — a pipeline that emits a float between 0 and 1. Swapping the rule engine for a scikit-learn model is a single-class substitution behind a `FraudScoringStrategy` interface.
+The outbox approach helps ensure that important events are not lost when processing transactions.
 
 ---
 
-### Rate Limiting
+### 6. Concurrent Transfer Protection
 
-Per-user sliding window rate limiting backed by Upstash Redis. Payment initiation is limited to 30 requests per user per minute. Auth endpoints are limited to 10 requests per IP per minute to prevent brute force.
+Payment systems must handle multiple requests attempting to modify the same wallet simultaneously.
 
-```java
-// Redis key: rate:{userId}:{endpoint}:{windowMinute}
-// Returns 429 RATE_LIMIT_EXCEEDED with Retry-After header when exceeded
+VaultPay uses database-level transaction handling and locking mechanisms to reduce the possibility of concurrent overdrafts.
+
+Conceptually:
+
+```text
+Wallet Balance: ₹1000
+
+Request 1 → Send ₹800
+Request 2 → Send ₹800
+
+Only one transaction should successfully consume
+the available ₹1000 balance.
+
+Final Balance → ₹200
 ```
+
+This is particularly important for financial applications where race conditions can cause incorrect balances.
 
 ---
 
-### Cursor-Based Pagination
+### 7. Rate Limiting
 
-Transaction history uses cursor-based pagination, not OFFSET. OFFSET requires the database to scan and discard the first N rows on every page request — at 10 million ledger entries, page 500 would scan 10 million rows to return 20.
+VaultPay includes rate-limiting mechanisms to protect APIs from excessive requests.
 
+The backend contains dedicated rate-limiting and security filters for controlling request frequency.
+
+This helps protect sensitive endpoints such as:
+
+* Authentication
+* Payment initiation
+* Wallet operations
+
+---
+
+### 8. Cursor-Based Transaction History
+
+Transaction history is designed to support scalable retrieval using cursor-based pagination.
+
+```text
+GET /wallets/me/transactions?cursor=<id>&limit=20
 ```
-GET /wallets/me/transactions?cursor=<lastEntryId>&limit=20
-```
 
-The cursor is the opaque `id` of the last seen entry. The database reads from a known B-tree index position — O(1) per page regardless of dataset size.
+Instead of repeatedly scanning earlier records using a large `OFFSET`, the cursor identifies the last retrieved transaction and allows the database to continue from that point.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Free Tier |
-|---|---|---|
-| Frontend | React 18 + TypeScript + Tailwind + shadcn/ui | Vercel — unlimited |
-| Backend | Spring Boot 3.2 (Java 21) | Railway — ~500hr/month |
-| Database | Neon PostgreSQL | 512 MB free |
-| Cache | Upstash Redis | 10,000 commands/day |
-| Fraud AI | Groq API (llama-3.1-8b-instant) | Generous free tier |
-| Email | Resend API | 3,000 emails/month |
-| CI/CD | GitHub Actions + Vercel + Railway | Free for public repos |
-| Load Testing | k6 Cloud | 50 VUs, 1 test/month |
-| API Docs | Springdoc OpenAPI (Swagger UI) | Built-in |
-| Monitoring | UptimeRobot | Free |
+| Layer                   | Technology         |
+| ----------------------- | ------------------ |
+| Frontend                | React + TypeScript |
+| Build Tool              | Vite               |
+| Styling                 | Tailwind CSS       |
+| State Management        | Zustand            |
+| Backend                 | Spring Boot        |
+| Language                | Java               |
+| Database                | PostgreSQL         |
+| Cache                   | Redis              |
+| Authentication          | JWT                |
+| API Communication       | REST               |
+| Real-Time Communication | WebSocket          |
+| Database Migration      | Flyway             |
+| Build Tool              | Maven              |
+| Containerization        | Docker             |
+| Version Control         | Git + GitHub       |
 
-**Total monthly cost: ₹0** at demo scale.
+---
+
+## Backend Architecture
+
+```text
+backend/
+└── src/
+    ├── main/
+    │   ├── java/com/payflow/backend/
+    │   │
+    │   ├── common/
+    │   ├── config/
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── exception/
+    │   ├── filter/
+    │   ├── repository/
+    │   ├── security/
+    │   └── service/
+    │
+    └── resources/
+        ├── application.properties
+        ├── application.yml
+        ├── db/migration/
+        └── logback-spring.xml
+```
+
+### Major Backend Components
+
+| Component          | Responsibility                             |
+| ------------------ | ------------------------------------------ |
+| Controllers        | REST API endpoints                         |
+| Services           | Business logic                             |
+| Repositories       | Database access                            |
+| Entities           | Persistent data models                     |
+| DTOs               | API request/response models                |
+| Security           | JWT authentication and authorization       |
+| Filters            | Idempotency, rate limiting, authentication |
+| Fraud Engine       | Transaction risk evaluation                |
+| Ledger Service     | Financial transaction records              |
+| Outbox Poller      | Event processing                           |
+| Settlement Service | Settlement processing                      |
+| Audit Service      | System activity tracking                   |
+
+---
+
+## Frontend Architecture
+
+```text
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── admin/
+│   │   ├── Navbar.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   ├── QrCodeWidget.tsx
+│   │   ├── RecentTransactions.tsx
+│   │   ├── SendMoneyModal.tsx
+│   │   ├── TopUp.tsx
+│   │   └── WalletBalance.tsx
+│   │
+│   ├── hooks/
+│   ├── lib/
+│   ├── pages/
+│   ├── store/
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+│
+├── public/
+├── package.json
+├── vite.config.ts
+└── tailwind.config.js
+```
 
 ---
 
 ## API Endpoints
 
-Full interactive documentation at [`/swagger-ui.html`](https://payflow-api.railway.app/swagger-ui.html) with pre-filled example payloads.
+### Authentication
 
-**Auth**
-```
-POST /auth/register         Register + wallet provisioned automatically
-POST /auth/login            JWT login (24hr expiry)
-```
-
-**Wallet**
-```
-GET  /wallets/me            Wallet details
-GET  /wallets/me/balance    Cached balance (Redis, 30s TTL)
-GET  /wallets/me/transactions?cursor={id}&limit=20
-GET  /wallets/me/qr         QR code PNG for receive link
-POST /wallets/topup         Simulate wallet top-up
+```text
+POST /auth/register
+POST /auth/login
 ```
 
-**Payments**
-```
-POST /payments/initiate     Create payment intent
-                            Header: Idempotency-Key: <UUID v4>
-                            Body: { recipientWalletId|phone|upiHandle, amount, note }
-GET  /payments/{id}/status  Poll payment state
-WS   /ws/payments/{id}      Real-time state machine updates
+### Wallet
+
+```text
+GET  /wallets/me
+GET  /wallets/me/balance
+GET  /wallets/me/transactions
+GET  /wallets/me/qr
+POST /wallets/topup
 ```
 
-**Admin** (JWT role: ADMIN)
+### Payments
+
+```text
+POST /payments/initiate
+GET  /payments/{id}/status
+WS   /ws/payments/{id}
 ```
+
+### Admin
+
+```text
 GET    /admin/wallets
-PATCH  /admin/wallets/{id}/status       Freeze / unfreeze
-GET    /admin/fraud/alerts              Flagged payments with AI narrative
+PATCH  /admin/wallets/{id}/status
+GET    /admin/fraud/alerts
 GET    /admin/settlements/{date}/report.csv
 GET    /admin/audit-logs
 GET    /admin/reconciliation
@@ -259,128 +434,275 @@ GET    /admin/reconciliation
 
 ---
 
-## Performance
-
-Load tested with k6 Cloud at 20 TPS sustained for 60 seconds.
-
-| Metric | Result |
-|---|---|
-| P95 latency (payment initiation) | < 500ms |
-| P95 latency (balance read, cached) | < 100ms |
-| Error rate at 20 TPS | < 1% |
-| Idempotency correctness | 100% |
-| Ledger reconciliation mismatches | 0 |
-
-[View full k6 report →](./k6/reports/load-test-results.png)
-
-The bottleneck at 20 TPS is the HikariCP connection pool on a single Railway instance. To scale: PgBouncer for connection pooling, read replicas for balance queries, and ledger table partitioned by wallet ID hash.
-
----
-
 ## Project Structure
 
-```
-payflow/
+```text
+VaultPay/
+│
 ├── backend/
 │   ├── Dockerfile
-│   ├── railway.toml                      ← Deployment config (IaC equivalent)
-│   └── src/main/java/com/payflow/
-│       ├── auth/
-│       ├── wallet/
-│       ├── payment/
-│       ├── ledger/
-│       ├── fraud/
-│       ├── outbox/
-│       ├── settlement/
-│       ├── notification/
-│       ├── audit/
-│       ├── ratelimit/
-│       └── common/
-├── frontend/
-│   ├── vercel.json
+│   ├── pom.xml
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   │
 │   └── src/
-├── db/
-│   └── migrations/                       ← Flyway versioned SQL
-│       ├── V1__init.sql
-│       ├── V2__audit_log.sql
-│       └── V3__settlement.sql
-├── k6/
-│   ├── smoke-test.js
-│   ├── load-test.js
-│   └── reports/
-│       └── load-test-results.png
-└── .github/
-    └── workflows/
-        ├── backend-ci.yml                ← Build → test → coverage gate → deploy
-        └── frontend-ci.yml
+│       ├── main/
+│       │   ├── java/com/payflow/backend/
+│       │   │   ├── common/
+│       │   │   ├── config/
+│       │   │   ├── controller/
+│       │   │   ├── dto/
+│       │   │   ├── entity/
+│       │   │   ├── exception/
+│       │   │   ├── filter/
+│       │   │   ├── repository/
+│       │   │   ├── security/
+│       │   │   └── service/
+│       │   │
+│       │   └── resources/
+│       │       ├── db/migration/
+│       │       ├── application.properties
+│       │       ├── application.yml
+│       │       └── logback-spring.xml
+│       │
+│       └── test/
+│
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   ├── store/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   │
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.ts
+│   └── tailwind.config.js
+│
+├── .gitignore
+└── README.md
 ```
 
 ---
 
 ## Running Locally
 
-**Prerequisites:** Java 21, Node 20, Docker (for Testcontainers)
+### Prerequisites
+
+Make sure the following are installed:
+
+* Java
+* Maven
+* Node.js
+* npm
+* PostgreSQL
+* Redis
+
+### Clone the Repository
 
 ```bash
-# Clone
-git clone https://github.com/your-username/payflow.git
-cd payflow
+git clone https://github.com/GOPIRAM577/VaultPay.git
+cd VaultPay
+```
 
-# Backend
+### Backend
+
+```bash
 cd backend
-cp .env.example .env          # fill in your free-tier keys
-./mvnw spring-boot:run
+```
 
-# Frontend
-cd ../frontend
+Configure the required environment variables and database settings, then run:
+
+```bash
+./mvnw spring-boot:run
+```
+
+On Windows:
+
+```cmd
+mvnw.cmd spring-boot:run
+```
+
+### Frontend
+
+Open another terminal:
+
+```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-**Environment variables needed** (all free-tier, takes ~15 min to set up):
-
-| Variable | Where to get it |
-|---|---|
-| `DATABASE_URL` | [neon.tech](https://neon.tech) → create project |
-| `REDIS_URL` | [upstash.com](https://upstash.com) → create Redis |
-| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → API keys |
-| `RESEND_API_KEY` | [resend.com](https://resend.com) → API keys |
-| `JWT_SECRET` | any random 64-char string |
+The frontend will then be available through the Vite development server.
 
 ---
 
 ## Running Tests
 
+Navigate to the backend:
+
 ```bash
 cd backend
-
-# Unit + integration tests (Testcontainers spins up PostgreSQL + Redis automatically)
-./mvnw test
-
-# Coverage report — opens in browser
-./mvnw jacoco:report
-open target/site/jacoco/index.html
-
-# Key test to look at:
-# src/test/java/com/payflow/wallet/WalletServiceTest.java
-# → concurrent_transfers_should_not_allow_overdraft()
 ```
+
+Run the test suite:
+
+```bash
+./mvnw test
+```
+
+On Windows:
+
+```cmd
+mvnw.cmd test
+```
+
+The project contains tests covering important backend functionality including:
+
+* Application startup
+* Payment integration
+* Fraud scoring
+* Payment state transitions
+* Outbox processing
+
+---
+
+## Security Considerations
+
+VaultPay includes several mechanisms designed to demonstrate secure payment-system engineering:
+
+* JWT authentication
+* Protected API routes
+* Role-based authorization
+* Password-based authentication
+* Idempotency handling
+* Rate limiting
+* Fraud detection
+* Audit logging
+* Wallet status controls
+* Transaction validation
+
+Sensitive configuration such as database credentials, JWT secrets, and API keys should be supplied through environment variables rather than committed to Git.
 
 ---
 
 ## Why These Architectural Choices?
 
-**Modular monolith over microservices:** Each package has explicit service-shaped interfaces, but runs in one process. Zero infra cost, zero network overhead between packages, and far more honest to explain than fake microservices on a laptop. Shopify and Stack Overflow run on modular monoliths.
+### Modular Monolith
 
-**Outbox pattern over Kafka:** Same architectural guarantee — at-least-once delivery, atomic state + event write — at zero infrastructure cost. Replacing the poller with a Kafka consumer is a deployment change, not an architectural one.
+VaultPay uses a modular-monolith structure instead of unnecessarily splitting the application into multiple microservices.
 
-**Rule-based fraud scoring over ML:** Training a classifier requires labelled fraud data. The architecture is identical to production — a pipeline that emits a float. Swapping rules for a model is a single-class change behind a `FraudScoringStrategy` interface.
+This provides:
 
-**Neon PostgreSQL over MongoDB:** The financial domain is inherently relational. Double-entry ledgers, wallet balances, and payment relationships are cleaner in SQL, and PostgreSQL's trigger system enforces ledger immutability at the DB layer — no ORM can bypass it.
+* Lower infrastructure complexity
+* Easier local development
+* Faster communication between modules
+* Clear separation of responsibilities
+* A simpler deployment model
 
-**Cursor pagination over OFFSET:** OFFSET degrades linearly with dataset size. Cursor pagination reads from a known index position — O(1) per page at any scale.
+The individual modules can later be separated into services if the system grows.
+
+### PostgreSQL
+
+A relational database is appropriate for a payment system because wallets, payments, users, ledger entries, and audit records have strong relationships and transactional requirements.
+
+### Redis
+
+Redis can be used for:
+
+* Caching
+* Idempotency
+* Rate limiting
+* Short-lived payment state
+* Fast-access application data
+
+### WebSockets
+
+WebSockets allow payment state changes to be communicated to the frontend in real time rather than requiring the client to repeatedly refresh the payment status.
+
+### Rule-Based Fraud Detection
+
+A rule-based fraud engine makes the system transparent and easy to explain.
+
+Each rule contributes to the overall risk assessment, making it possible to understand why a transaction was flagged.
 
 ---
 
+## Interview Talking Points
+
+VaultPay provides several useful topics to discuss during technical interviews:
+
+**Backend**
+
+* Spring Boot architecture
+* REST API design
+* JWT authentication
+* Role-based authorization
+* Database transactions
+* Repository pattern
+* Service-layer architecture
+
+**System Design**
+
+* Payment state machines
+* Idempotency
+* Double-entry ledger
+* Transactional outbox
+* Concurrent transaction handling
+* Rate limiting
+* Caching
+* WebSockets
+
+**Frontend**
+
+* React component architecture
+* TypeScript
+* State management with Zustand
+* Protected routes
+* REST API integration
+* Real-time WebSocket updates
+
+**Database**
+
+* PostgreSQL
+* Relational data modeling
+* Flyway migrations
+* Transaction consistency
+* Ledger entries
+* Audit logging
 
 ---
+
+## Future Improvements
+
+Possible future extensions include:
+
+* Machine-learning-based fraud detection
+* Kafka-based event processing
+* Payment gateway integration
+* Real UPI integration
+* Advanced analytics dashboard
+* Distributed tracing
+* Prometheus/Grafana monitoring
+* Automated CI/CD deployment
+* Kubernetes deployment
+* Microservice migration
+
+---
+
+## Author
+
+**VaultPay — Full-Stack Digital Payment Wallet Simulation**
+
+Built using modern Java backend and React frontend technologies to demonstrate real-world payment-system architecture and engineering practices.
+
+---
+
+## License
+
+This project is intended for educational, demonstration, and portfolio purposes.
