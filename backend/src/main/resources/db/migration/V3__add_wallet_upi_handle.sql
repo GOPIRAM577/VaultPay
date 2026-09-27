@@ -1,0 +1,2 @@
+ALTER TABLE wallets
+ADD COLUMN upi_handle VARCHAR(50) UNIQUE;
